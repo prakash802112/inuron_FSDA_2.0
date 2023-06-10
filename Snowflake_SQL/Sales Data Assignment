@@ -58,7 +58,7 @@ CREATE OR REPLACE TABLE PK_SALES_DATA_COPY AS -- IT WILL CREATE A NEW TABLE WHIC
   SELECT
   --Q 4. Create a new column called order_extract and extract the number after the last ‘–‘ from Order ID column.
         SUBSTR(ORDER_ID , 1, 7 ) AS NEW_ORDER_ID,
-        SUBSTR(ORDER_ID , 9 ) AS ORDER_EXTRACT,
+        SUBSTR(ORDER_ID , 9 ) AS ORDER_EXTRACT,   --OR  SPLIT_PART(ORDER_ID, '-', 3 ) AS ORDER_EXTRACT;
         
         
 /*Q 3. Check the data type for Order date and Ship date and mention in what data type it should be?
