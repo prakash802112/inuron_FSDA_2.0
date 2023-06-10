@@ -1,0 +1,94 @@
+ USE DATABASE DEMO_DATABASE;
+ 
+
+  CREATE OR REPLACE TABLE PK_SALES_DATA
+             (
+              order_id VARCHAR(30),
+              order_date VARCHAR(20) PRIMARY KEY, 
+              ship_date VARCHAR(20),
+              ship_mode CHAR(20),
+              customer_name VARCHAR(40),
+              segment CHAR(20),
+              STATE VARCHAR (60),
+              COUNTRY VARCHAR (50),
+              MARKET VARCHAR (20),
+              region  VARCHAR (40),
+              product_id VARCHAR (40),
+              category VARCHAR (40),
+              sub_category VARCHAR (40),
+              product_name STRING,
+              sales NUMBER (10,0),
+              quantity INT,
+              discount FLOAT,
+              profit FLOAT,
+              shipping_cost FLOAT,
+              order_priority VARCHAR(50),
+              year int
+              );
+              
+  DESCRIBE TABLE PK_SALES_DATA;
+  SELECT * FROM PK_SALES_DATA;    
+             
+
+--- CREATING A COPY OF DATA TO MAKE CHANGES WITHOUT AFFECTING THE ORIGINAL DATA
+
+
+ CREATE OR REPLACE TABLE PK_SALES_DATA_COPY
+        AS SELECT * FROM PK_SALES_DATA; 
+
+DESCRIBE TABLE PK_SALES_DATA_COPY;
+SELECT * FROM PK_SALES_DATA_COPY;
+
+--Q 1. Add a primary key to Order Date column.
+
+ALTER TABLE PK_SALES_DATA_COPY
+ADD PRIMARY KEY (order_date);
+
+--Q 2. Change the Primary key to Order Id Column.
+
+ALTER TABLE PK_SALES_DATA_COPY
+DROP PRIMARY KEY;
+--ADDING PRIMARY KEY ON ORDER ID
+ALTER TABLE PK_SALES_DATA_COPY
+ADD PRIMARY KEY (order_id) ;
+            
+            
+
+CREATE OR REPLACE TABLE PK_SALES_DATA_COPY AS -- IT WILL CREATE A NEW TABLE WHICH IS CLEANED BY FOLLOWING QUERY.
+  SELECT
+  --Q 4. Create a new column called order_extract and extract the number after the last ‘–‘ from Order ID column.
+        SUBSTR(ORDER_ID , 1, 7 ) AS NEW_ORDER_ID,
+        SUBSTR(ORDER_ID , 9 ) AS ORDER_EXTRACT,
+        
+        
+/*Q 3. Check the data type for Order date and Ship date and mention in what data type it should be?
+  ANS- cleaned the ORDER_DATE & SHIP_DATE column in excel, changed the date format into (YYYY-MM-DD) using text to column in 'DATA' Tab 
+       and loaded in snowflake into VARCHAR Data Type. ******** NOW HERE I'M CHANGING THE DATA TYPE USING CAST. */
+        CAST(ORDER_DATE AS DATE ) AS ORDER_DT_DATA_TYP_CHNGD,
+        CAST(SHIP_DATE  AS DATE ) AS  SHIP_DT_DATA_TYP_CHNGD,
+        
+        
+--Q 6. Create a new column called process days and calculate how many days it takes for each order id to process from the order to its shipment.        
+        DATEDIFF(DAY , order_date , ship_date) AS PROCESS_DAYS,
+        
+--Q 7. Create a new column called Rating and then based on the Process dates give rating.
+    CASE
+        WHEN PROCESS_DAYS <= 3 THEN '*****'
+        WHEN PROCESS_DAYS > 3 <= 6 THEN '****' --**OR** WHEN PROCESS_DAYS BETWEEN 3 AND 6 THEN '****'
+        WHEN PROCESS_DAYS > 6 <= 10 THEN '***' --**OR** WHEN PROCESS_DAYS BETWEEN 6 AND 10 THEN '***'
+        WHEN PROCESS_DAYS > 10 THEN '**'
+        END AS RATING,
+        
+-- Q 5. Create a new column called Discount Flag and categorize it based on discount.Use ‘Yes’ if the discount is greater than zero else ‘No’.
+    CASE 
+        WHEN DISCOUNT > 0 THEN 'YES'
+        ELSE 'FALSE'
+        END AS DISCOUNT_FLAG,
+        
+        CUSTOMER_NAME, SEGMENT, STATE, COUNTRY, MARKET, REGION, PRODUCT_ID, CATEGORY, SUB_CATEGORY, PRODUCT_NAME, SALES, QUANTITY, DISCOUNT,
+        PROFIT, SHIPPING_COST, ORDER_PRIORITY, YEAR
+        
+  FROM PK_SALES_DATA_COPY;  
+        
+  SELECT * FROM PK_SALES_DATA_COPY;
+  DESCRIBE TABLE PK_SALES_DATA_COPY;
